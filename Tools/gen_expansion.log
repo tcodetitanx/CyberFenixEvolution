@@ -1,0 +1,161 @@
+STATUS START cyborg_sentinel
+WROTE Content/Art/Source/cyborg_sentinel.png 2009509 bytes
+USAGE {"input_tokens": 457, "input_tokens_details": {"image_tokens": 323, "text_tokens": 134}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4617}
+STATUS DONE cyborg_sentinel 66s
+STATUS START cyborg_ranger
+WROTE Content/Art/Source/cyborg_ranger.png 1707143 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE cyborg_ranger 47s
+STATUS START cyborg_lancer
+WROTE Content/Art/Source/cyborg_lancer.png 1743358 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE cyborg_lancer 45s
+STATUS START cyborg_artillery
+WROTE Content/Art/Source/cyborg_artillery.png 1752431 bytes
+USAGE {"input_tokens": 456, "input_tokens_details": {"image_tokens": 323, "text_tokens": 133}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4616}
+STATUS DONE cyborg_artillery 50s
+STATUS START cyborg_medic
+WROTE Content/Art/Source/cyborg_medic.png 1851981 bytes
+USAGE {"input_tokens": 456, "input_tokens_details": {"image_tokens": 323, "text_tokens": 133}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4616}
+STATUS DONE cyborg_medic 47s
+STATUS START cyborg_assassin
+WROTE Content/Art/Source/cyborg_assassin.png 1666510 bytes
+USAGE {"input_tokens": 453, "input_tokens_details": {"image_tokens": 323, "text_tokens": 130}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4613}
+STATUS DONE cyborg_assassin 45s
+STATUS START cyborg_juggernaut
+WROTE Content/Art/Source/cyborg_juggernaut.png 2100585 bytes
+USAGE {"input_tokens": 457, "input_tokens_details": {"image_tokens": 323, "text_tokens": 134}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4617}
+STATUS DONE cyborg_juggernaut 62s
+STATUS START cyborg_striker
+WROTE Content/Art/Source/cyborg_striker.png 1803744 bytes
+USAGE {"input_tokens": 457, "input_tokens_details": {"image_tokens": 323, "text_tokens": 134}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4617}
+STATUS DONE cyborg_striker 45s
+STATUS START cyborg_engineer
+WROTE Content/Art/Source/cyborg_engineer.png 1786118 bytes
+USAGE {"input_tokens": 455, "input_tokens_details": {"image_tokens": 323, "text_tokens": 132}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4615}
+STATUS DONE cyborg_engineer 37s
+STATUS START cyborg_vanguard
+WROTE Content/Art/Source/cyborg_vanguard.png 1743293 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE cyborg_vanguard 50s
+STATUS START cyborg_railgunner
+WROTE Content/Art/Source/cyborg_railgunner.png 1721900 bytes
+USAGE {"input_tokens": 455, "input_tokens_details": {"image_tokens": 323, "text_tokens": 132}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4615}
+STATUS DONE cyborg_railgunner 71s
+STATUS START cyborg_pyro
+WROTE Content/Art/Source/cyborg_pyro.png 1776257 bytes
+USAGE {"input_tokens": 457, "input_tokens_details": {"image_tokens": 323, "text_tokens": 134}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4617}
+STATUS DONE cyborg_pyro 46s
+STATUS START cyborg_orbdrone
+WROTE Content/Art/Source/cyborg_orbdrone.png 1687299 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE cyborg_orbdrone 46s
+STATUS START cyborg_warden
+WROTE Content/Art/Source/cyborg_warden.png 1982473 bytes
+USAGE {"input_tokens": 456, "input_tokens_details": {"image_tokens": 323, "text_tokens": 133}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4616}
+STATUS DONE cyborg_warden 38s
+STATUS START cyborg_berserker
+WROTE Content/Art/Source/cyborg_berserker.png 1991239 bytes
+USAGE {"input_tokens": 456, "input_tokens_details": {"image_tokens": 323, "text_tokens": 133}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4616}
+STATUS DONE cyborg_berserker 51s
+STATUS START cyborg_marksman
+WROTE Content/Art/Source/cyborg_marksman.png 1776738 bytes
+USAGE {"input_tokens": 457, "input_tokens_details": {"image_tokens": 323, "text_tokens": 134}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4617}
+STATUS DONE cyborg_marksman 49s
+STATUS START cyborg_titan
+WROTE Content/Art/Source/cyborg_titan.png 1906479 bytes
+USAGE {"input_tokens": 455, "input_tokens_details": {"image_tokens": 323, "text_tokens": 132}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4615}
+STATUS DONE cyborg_titan 39s
+STATUS START cyborg_scout
+WROTE Content/Art/Source/cyborg_scout.png 1853940 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE cyborg_scout 46s
+STATUS START cyborg_guardian
+WROTE Content/Art/Source/cyborg_guardian.png 1855493 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE cyborg_guardian 44s
+STATUS START cyborg_destroyer
+WROTE Content/Art/Source/cyborg_destroyer.png 1924756 bytes
+USAGE {"input_tokens": 456, "input_tokens_details": {"image_tokens": 323, "text_tokens": 133}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4616}
+STATUS DONE cyborg_destroyer 40s
+STATUS START insect_soldier
+WROTE Content/Art/Source/insect_soldier.png 2102235 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE insect_soldier 39s
+STATUS START insect_spitter
+WROTE Content/Art/Source/insect_spitter.png 1948091 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_spitter 48s
+STATUS START insect_burrower
+WROTE Content/Art/Source/insect_burrower.png 1757118 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_burrower 50s
+STATUS START insect_queen
+WROTE Content/Art/Source/insect_queen.png 1976498 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_queen 55s
+STATUS START insect_workerbug
+WROTE Content/Art/Source/insect_workerbug.png 1762463 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_workerbug 46s
+STATUS START insect_mantis
+WROTE Content/Art/Source/insect_mantis.png 1843446 bytes
+USAGE {"input_tokens": 453, "input_tokens_details": {"image_tokens": 323, "text_tokens": 130}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4613}
+STATUS DONE insect_mantis 77s
+STATUS START insect_scorpion
+WROTE Content/Art/Source/insect_scorpion.png 1804739 bytes
+USAGE {"input_tokens": 453, "input_tokens_details": {"image_tokens": 323, "text_tokens": 130}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4613}
+STATUS DONE insect_scorpion 50s
+STATUS START insect_wasp
+WROTE Content/Art/Source/insect_wasp.png 1999987 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE insect_wasp 36s
+STATUS START insect_carapace
+WROTE Content/Art/Source/insect_carapace.png 2021064 bytes
+USAGE {"input_tokens": 451, "input_tokens_details": {"image_tokens": 323, "text_tokens": 128}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4611}
+STATUS DONE insect_carapace 40s
+STATUS START insect_swarmer
+WROTE Content/Art/Source/insect_swarmer.png 1728775 bytes
+USAGE {"input_tokens": 451, "input_tokens_details": {"image_tokens": 323, "text_tokens": 128}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4611}
+STATUS DONE insect_swarmer 47s
+STATUS START insect_weaver
+WROTE Content/Art/Source/insect_weaver.png 1843314 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_weaver 61s
+STATUS START insect_charger
+WROTE Content/Art/Source/insect_charger.png 1845798 bytes
+USAGE {"input_tokens": 453, "input_tokens_details": {"image_tokens": 323, "text_tokens": 130}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4613}
+STATUS DONE insect_charger 43s
+STATUS START insect_locust
+WROTE Content/Art/Source/insect_locust.png 1875850 bytes
+USAGE {"input_tokens": 453, "input_tokens_details": {"image_tokens": 323, "text_tokens": 130}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4613}
+STATUS DONE insect_locust 60s
+STATUS START insect_centipede
+WROTE Content/Art/Source/insect_centipede.png 2017289 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+STATUS DONE insect_centipede 43s
+STATUS START insect_hornet
+WROTE Content/Art/Source/insect_hornet.png 1865721 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_hornet 47s
+STATUS START insect_brute
+WROTE Content/Art/Source/insect_brute.png 1945567 bytes
+USAGE {"input_tokens": 450, "input_tokens_details": {"image_tokens": 323, "text_tokens": 127}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4610}
+STATUS DONE insect_brute 47s
+STATUS START insect_widow
+WROTE Content/Art/Source/insect_widow.png 1789839 bytes
+USAGE {"input_tokens": 455, "input_tokens_details": {"image_tokens": 323, "text_tokens": 132}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4615}
+STATUS DONE insect_widow 47s
+STATUS START insect_ravager
+WROTE Content/Art/Source/insect_ravager.png 1941032 bytes
+USAGE {"input_tokens": 452, "input_tokens_details": {"image_tokens": 323, "text_tokens": 129}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4612}
+STATUS DONE insect_ravager 48s
+STATUS START insect_moth
+WROTE Content/Art/Source/insect_moth.png 1953238 bytes
+USAGE {"input_tokens": 451, "input_tokens_details": {"image_tokens": 323, "text_tokens": 128}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4611}
+STATUS DONE insect_moth 37s
+STATUS START insect_behemoth
+WROTE Content/Art/Source/insect_behemoth.png 2150488 bytes
+USAGE {"input_tokens": 449, "input_tokens_details": {"image_tokens": 323, "text_tokens": 126}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4609}
+STATUS DONE insect_behemoth 52s
+STATUS ALL_COMPLETE

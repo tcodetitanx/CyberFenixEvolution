@@ -1,0 +1,29 @@
+=== GENERATING cyborg_base ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\cyborg_base.png 2051979 bytes
+USAGE {"input_tokens": 454, "input_tokens_details": {"image_tokens": 323, "text_tokens": 131}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4614}
+   -> OK cyborg_base
+=== GENERATING generation_depot ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\generation_depot.png 1888104 bytes
+USAGE {"input_tokens": 448, "input_tokens_details": {"image_tokens": 323, "text_tokens": 125}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4608}
+   -> OK generation_depot
+=== GENERATING insect_hive ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\insect_hive.png 1867239 bytes
+USAGE {"input_tokens": 450, "input_tokens_details": {"image_tokens": 323, "text_tokens": 127}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4610}
+   -> OK insect_hive
+=== GENERATING insect_grunt ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\insect_grunt.png 1696801 bytes
+USAGE {"input_tokens": 459, "input_tokens_details": {"image_tokens": 323, "text_tokens": 136}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4619}
+   -> OK insect_grunt
+=== GENERATING insect_flyer ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\insect_flyer.png 1739887 bytes
+USAGE {"input_tokens": 444, "input_tokens_details": {"image_tokens": 323, "text_tokens": 121}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4604}
+   -> OK insect_flyer
+=== GENERATING cyborg_heavy ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\cyborg_heavy.png 1715023 bytes
+USAGE {"input_tokens": 453, "input_tokens_details": {"image_tokens": 323, "text_tokens": 130}, "output_tokens": 4160, "output_tokens_details": {"image_tokens": 4160, "text_tokens": 0}, "total_tokens": 4613}
+   -> OK cyborg_heavy
+=== GENERATING battlefield_bg ===
+WROTE D:\UEprojects\EvolutionWar\Content\Art\Source\battlefield_bg.png 2103551 bytes
+USAGE {"input_tokens": 429, "input_tokens_details": {"image_tokens": 323, "text_tokens": 106}, "output_tokens": 6208, "output_tokens_details": {"image_tokens": 6208, "text_tokens": 0}, "total_tokens": 6637}
+   -> OK battlefield_bg
+BATCH DONE
