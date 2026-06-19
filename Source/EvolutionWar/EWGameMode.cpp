@@ -5,13 +5,66 @@
 #include "EWHUD.h"
 #include "EWParticleBurst.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/SkyLight.h"
+#include "Components/LightComponent.h"
+#include "Components/SkyLightComponent.h"
+#include "Engine/StaticMeshActor.h"
+#include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInterface.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 AEWGameMode::AEWGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	DefaultPawnClass = AEWCameraPawn::StaticClass();
 	HUDClass = AEWHUD::StaticClass();
+}
+
+namespace
+{
+	/** The battlefield sprites are unlit (true colours), but the backdrop is lit and
+	 *  picks up any coloured level lighting, reading as a tint. Force all level lights
+	 *  to neutral white and clear any tint param on the background material so the
+	 *  backdrop shows its normal colours. */
+	void NeutralizeBackground(UWorld* World)
+	{
+		if (!World) { return; }
+		int32 NumLights = 0, NumBg = 0;
+
+		for (TActorIterator<ADirectionalLight> It(World); It; ++It)
+		{
+			if (ULightComponent* L = (*It)->GetLightComponent()) { L->SetLightColor(FLinearColor::White); ++NumLights; }
+		}
+		for (TActorIterator<ASkyLight> It(World); It; ++It)
+		{
+			if (USkyLightComponent* L = (*It)->GetLightComponent()) { L->SetLightColor(FLinearColor::White); ++NumLights; }
+		}
+
+		for (TActorIterator<AStaticMeshActor> It(World); It; ++It)
+		{
+			UStaticMeshComponent* C = (*It)->GetStaticMeshComponent();
+			if (!C) { continue; }
+			const int32 N = C->GetNumMaterials();
+			for (int32 i = 0; i < N; ++i)
+			{
+				UMaterialInterface* M = C->GetMaterial(i);
+				if (M && M->GetName().Contains(TEXT("Background")))
+				{
+					if (UMaterialInstanceDynamic* MID = C->CreateAndSetMaterialInstanceDynamic(i))
+					{
+						// No-ops if the parameter doesn't exist; clears it if it does.
+						MID->SetVectorParameterValue(TEXT("Tint"), FLinearColor::White);
+						MID->SetVectorParameterValue(TEXT("Color"), FLinearColor::White);
+						++NumBg;
+					}
+				}
+			}
+		}
+		UE_LOG(LogTemp, Log, TEXT("[EvolutionWar] Background neutralized: %d light(s) to white, %d bg material(s)"), NumLights, NumBg);
+	}
 }
 
 void AEWGameMode::BeginPlay()
@@ -21,6 +74,17 @@ void AEWGameMode::BeginPlay()
 	CyborgTimer = 1.0f;
 	InsectTimer = 1.0f;
 	bMatchOver = false;
+
+	// ---- Programmatic lane / pacing settings --------------------------------
+	CombatRows = 2;            // number of lanes (was 3)
+	FrontPerRow = 2;           // units abreast per lane at a clash point
+	RowSpacing = 650.f;        // depth gap between lanes
+	// Spawn rate reduced 75% (4x the interval).
+	CyborgSpawnInterval = 8.8f; // was 2.2
+	InsectSpawnInterval = 8.0f; // was 2.0
+
+	MirrorLevelLayout();
+	NeutralizeBackground(GetWorld());
 	BuildDefaultCatalog();
 	EnsureOrbitalDefaults();
 	EnsurePlayerHUD();
@@ -122,6 +186,25 @@ namespace
 	};
 }
 
+void AEWGameMode::MirrorLevelLayout()
+{
+	UWorld* World = GetWorld();
+	if (!World) { return; }
+
+	// Flip placed buildings across X=0 so the cyborg base ends up at +X (screen-left).
+	int32 Mirrored = 0;
+	for (TActorIterator<AEWBuilding> It(World); It; ++It)
+	{
+		AEWBuilding* B = *It;
+		if (!B) { continue; }
+		FVector Loc = B->GetActorLocation();
+		Loc.X = -Loc.X;
+		B->SetActorLocation(Loc);
+		++Mirrored;
+	}
+	UE_LOG(LogTemp, Log, TEXT("[EvolutionWar] Mirrored %d building(s) across X=0 for screen-left cyborgs"), Mirrored);
+}
+
 void AEWGameMode::BuildDefaultCatalog()
 {
 	// Respect a designer-authored Blueprint roster if one is already richly populated;
@@ -142,6 +225,10 @@ void AEWGameMode::BuildDefaultCatalog()
 			InsectClasses.Add(SeedToDef(S));
 		}
 	}
+
+	// Everything costs 4x as much to deploy.
+	for (FUnitClassDef& D : CyborgClasses) { D.DeployCost *= 4.f; }
+	for (FUnitClassDef& D : InsectClasses) { D.DeployCost *= 4.f; }
 
 	UE_LOG(LogTemp, Log, TEXT("[EvolutionWar] Catalog seeded: %d cyborg classes, %d insect classes"),
 		CyborgClasses.Num(), InsectClasses.Num());
@@ -171,8 +258,8 @@ void AEWGameMode::EnsureOrbitalDefaults()
 	const int32 N = (int32)EEWOrbital::Count;
 	if (OrbitalCosts.Num() != N)
 	{
-		// Cannon, Bomb, Laser, Shield
-		OrbitalCosts = { 40.f, 70.f, 90.f, 55.f };
+		// Cannon, Bomb, Laser, Shield — 4x base cost.
+		OrbitalCosts = { 160.f, 280.f, 360.f, 220.f };
 	}
 	if (OrbitalCooldowns.Num() != N)
 	{
@@ -254,25 +341,47 @@ void AEWGameMode::AutoSpawn(EEWTeam InTeam)
 
 float AEWGameMode::AssignFormationY(EEWTeam InTeam, EEWRole InRole, int32& OutLane)
 {
-	const int32 Files = FMath::Max(1, GroundFiles);
+	const int32 Rows = FMath::Max(1, CombatRows);
+	const int32 PerRow = FMath::Max(1, FrontPerRow);
+	const int32 TotalFiles = Rows * PerRow;
+
 	int32 Lane;
 	if (IsAerialRole(InRole))
 	{
-		// Flyers ride the centre file so they sweep over the melee scrum.
-		Lane = Files / 2;
+		// Flyers ride the centre row so they sweep over the ground scrum.
+		const int32 CentreRow = Rows / 2;
+		Lane = CentreRow * PerRow + (PerRow / 2);
 	}
 	else
 	{
+		// Round-robin across every (row, file) so spawns fill all rows evenly.
 		int32& Cursor = (InTeam == EEWTeam::Cyborg) ? CyborgLaneCursor : InsectLaneCursor;
-		Lane = Cursor % Files;
+		Lane = Cursor % TotalFiles;
 		++Cursor;
 	}
 	OutLane = Lane;
 
-	// Centre the files around LaneY: file i sits at (i - (Files-1)/2) * spacing.
-	const float Centered = (float)Lane - 0.5f * (float)(Files - 1);
-	const float Jitter = Rng.FRandRange(-FileSpacing * 0.18f, FileSpacing * 0.18f);
-	return LaneY + Centered * FileSpacing + Jitter;
+	const int32 Row = Lane / PerRow;   // 0 = nearest the camera
+	const int32 File = Lane % PerRow;  // file within the row
+
+	// The camera is on the -Y side, so the nearest row (0) sits at the lowest Y and
+	// each further row steps UP in Y, reading higher on screen and drawn smaller.
+	const float RowCentre = 0.5f * (float)(Rows - 1);
+	const float RowY = ((float)Row - RowCentre) * RowSpacing;
+	const float FileCentre = 0.5f * (float)(PerRow - 1);
+	const float FileY = ((float)File - FileCentre) * AbreastSpacing;
+	const float Jitter = Rng.FRandRange(-AbreastSpacing * 0.12f, AbreastSpacing * 0.12f);
+	return LaneY + RowY + FileY + Jitter;
+}
+
+float AEWGameMode::RowScaleForLane(int32 Lane) const
+{
+	const int32 Rows = FMath::Max(1, CombatRows);
+	const int32 PerRow = FMath::Max(1, FrontPerRow);
+	if (Rows <= 1) { return 1.f; }
+	const int32 Row = FMath::Clamp(Lane / PerRow, 0, Rows - 1);
+	const float T = (float)Row / (float)(Rows - 1); // 0 nearest .. 1 furthest
+	return FMath::Lerp(1.f, FarRowScale, T);
 }
 
 float AEWGameMode::EffectiveMutation(EEWTeam InTeam) const
@@ -291,7 +400,7 @@ AEWUnit* AEWGameMode::SpawnUnitOfClass(EEWTeam InTeam, const FUnitClassDef& Def,
 
 	const FUnitGenome Genome = bMutate ? Def.BaseGenome.Mutated(EffectiveMutation(InTeam), Rng) : Def.BaseGenome;
 
-	const float SpawnOffset = (InTeam == EEWTeam::Cyborg) ? 600.f : -600.f;
+	const float SpawnOffset = (InTeam == EEWTeam::Cyborg) ? -600.f : 600.f;
 	const float X = GetBaseX(InTeam) + SpawnOffset;
 	int32 Lane = 0;
 	const float Y = AssignFormationY(InTeam, Genome.Role, Lane);
@@ -303,6 +412,7 @@ AEWUnit* AEWGameMode::SpawnUnitOfClass(EEWTeam InTeam, const FUnitClassDef& Def,
 		return nullptr;
 	}
 	Unit->SetDepthLane(Lane);
+	Unit->SetRowScale(RowScaleForLane(Lane));
 	Unit->InitUnit(InTeam, Genome, Def.Sprite, Def.SpriteWorldHeight);
 	Unit->FinishSpawning(Xform);
 	return Unit;
@@ -320,7 +430,7 @@ AEWUnit* AEWGameMode::SpawnChampionOffspring(EEWTeam InTeam, const FEWChampion& 
 	// swing so the lineage converges on what already works.
 	const FUnitGenome Genome = Champ.Genome.Mutated(EffectiveMutation(InTeam) * 0.6f, Rng);
 
-	const float SpawnOffset = (InTeam == EEWTeam::Cyborg) ? 600.f : -600.f;
+	const float SpawnOffset = (InTeam == EEWTeam::Cyborg) ? -600.f : 600.f;
 	const float X = GetBaseX(InTeam) + SpawnOffset;
 	int32 Lane = 0;
 	const float Y = AssignFormationY(InTeam, Genome.Role, Lane);
@@ -332,6 +442,7 @@ AEWUnit* AEWGameMode::SpawnChampionOffspring(EEWTeam InTeam, const FEWChampion& 
 		return nullptr;
 	}
 	Unit->SetDepthLane(Lane);
+	Unit->SetRowScale(RowScaleForLane(Lane));
 	Unit->InitUnit(InTeam, Genome, Champ.Sprite, Champ.SpriteWorldHeight);
 	Unit->FinishSpawning(Xform);
 	return Unit;
@@ -414,6 +525,7 @@ AEWUnit* AEWGameMode::DeployPlayerUnit(int32 ClassIndex, float WorldX)
 		if (Unit)
 		{
 			Unit->SetDepthLane(Lane);
+			Unit->SetRowScale(RowScaleForLane(Lane));
 			Unit->InitUnit(EEWTeam::Cyborg, Genome, Def.Sprite, Def.SpriteWorldHeight);
 			Unit->FinishSpawning(Xform);
 			return Unit;
@@ -624,11 +736,16 @@ AActor* AEWGameMode::FindNearestEnemy(EEWTeam SeekerTeam, const FVector& Loc, fl
 
 	AActor* Best = nullptr;
 	float BestDist = MaxRange;
+	// Lane discipline: only engage enemies sharing this unit's row (depth band), so a
+	// unit in one lane never stops to fight someone in another. Aerials fly over every
+	// lane, so they ignore the row filter (any anti-air below can still target them).
+	const float RowMatchY = FMath::Max(60.f, RowSpacing * 0.5f);
 	for (const TObjectPtr<AEWUnit>& E : Enemies)
 	{
 		if (!E || !E->IsAlive()) { continue; }
 		// Ground-bound seekers can't reach flyers; skip aerial enemies for them.
 		if (!bSeekerCanHitAir && E->IsAerial()) { continue; }
+		if (!E->IsAerial() && FMath::Abs(E->GetActorLocation().Y - Loc.Y) > RowMatchY) { continue; }
 		const float D = FMath::Abs(E->GetActorLocation().X - Loc.X);
 		if (D <= BestDist)
 		{
@@ -661,8 +778,8 @@ bool AEWGameMode::NearestFriendlyAheadX(EEWTeam Team, float MyX, float DirSign, 
 	for (const TObjectPtr<AEWUnit>& F : Friends)
 	{
 		if (!F || F == Self || !F->IsAlive()) { continue; }
-		// Only queue behind friends in the SAME file, so each file holds independently
-		// (=> up to GroundFiles units fight abreast). Flyers never block the queue.
+		// Only queue behind friends in the SAME (row, file), so each file holds
+		// independently (=> FrontPerRow units fight abreast per row). Flyers never block.
 		if (F->GetDepthLane() != MyLane || F->IsAerial()) { continue; }
 		const float FX = F->GetActorLocation().X;
 		const float Ahead = (FX - MyX) * DirSign; // > 0 means F is ahead toward the enemy.
@@ -688,17 +805,18 @@ float AEWGameMode::GetBaseHealthFraction(EEWTeam InTeam) const
 
 float AEWGameMode::GetCombatCenterX() const
 {
-	// Cyborg front line = furthest-advanced cyborg (max X); Insect front = min X.
+	// Cyborgs are based at +X and advance toward -X, so their front line is their
+	// furthest-advanced (minimum X) unit; insects are the mirror (maximum X).
 	bool bHasC = false, bHasI = false;
-	float CyborgFront = -FLT_MAX;
-	float InsectFront = FLT_MAX;
+	float CyborgFront = FLT_MAX;
+	float InsectFront = -FLT_MAX;
 	for (const TObjectPtr<AEWUnit>& U : CyborgUnits)
 	{
-		if (U && U->IsAlive()) { CyborgFront = FMath::Max(CyborgFront, U->GetActorLocation().X); bHasC = true; }
+		if (U && U->IsAlive()) { CyborgFront = FMath::Min(CyborgFront, U->GetActorLocation().X); bHasC = true; }
 	}
 	for (const TObjectPtr<AEWUnit>& U : InsectUnits)
 	{
-		if (U && U->IsAlive()) { InsectFront = FMath::Min(InsectFront, U->GetActorLocation().X); bHasI = true; }
+		if (U && U->IsAlive()) { InsectFront = FMath::Max(InsectFront, U->GetActorLocation().X); bHasI = true; }
 	}
 	if (bHasC && bHasI) { return 0.5f * (CyborgFront + InsectFront); }
 	if (bHasC) { return CyborgFront; }

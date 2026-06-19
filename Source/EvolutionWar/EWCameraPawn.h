@@ -42,8 +42,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "EW|Camera")
 	float MaxX = 9500.f;
 
+	/** Mouse distance (px) from a screen edge that triggers League-style edge panning. */
 	UPROPERTY(EditAnywhere, Category = "EW|Camera")
-	float EdgeScrollMargin = 24.f;
+	float EdgeScrollMargin = 28.f;
+
+	/** Height units/sec applied while the mouse rests against the top/bottom edge. */
+	UPROPERTY(EditAnywhere, Category = "EW|Camera")
+	float EdgeHeightSpeed = 320.f;
 
 	/** When idle, drift the camera to follow the clash between the two armies. */
 	UPROPERTY(EditAnywhere, Category = "EW|Camera")
@@ -122,8 +127,10 @@ protected:
 	int32 SelectedClass = 0;
 	int32 ArmedOrbital = -1;
 
-	float TargetZoom = 1.f;
-	float CurrentZoom = 1.f;
+	// Start a little further back than the resting zoom so the opening framing isn't
+	// jammed into the background.
+	float TargetZoom = 1.35f;
+	float CurrentZoom = 1.35f;
 	float TargetHeight = 0.f;
 	float CurrentHeight = 0.f;
 	bool bShowHelp = false;

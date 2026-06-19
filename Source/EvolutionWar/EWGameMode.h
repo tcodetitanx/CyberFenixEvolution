@@ -39,11 +39,14 @@ public:
 	AEWGameMode();
 
 	// ---- Lane / world layout -------------------------------------------------
+	// The player's (cyborg) base sits at +X and the enemy at -X. With the camera on
+	// the -Y side, +X falls on the screen-LEFT, so the cyborgs read on the left to
+	// match the HUD. The level's placed bases are mirrored to suit in BeginPlay.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
-	float PlayerBaseX = -9000.f;
+	float PlayerBaseX = 9000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
-	float EnemyBaseX = 9000.f;
+	float EnemyBaseX = -9000.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
 	float GroundZ = 0.f;
@@ -55,13 +58,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
 	float LaneDepthSpread = 160.f;
 
-	/** Number of parallel ground files; up to this many units can fight abreast. */
+	/** Number of stacked combat rows (depth bands) the armies fight across. Each row
+	 *  is its own battle line; further-back rows render smaller for perspective. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
-	int32 GroundFiles = 5;
+	int32 CombatRows = 3;
 
-	/** Depth (Y) spacing between adjacent files. */
+	/** Units that may stand abreast per side WITHIN a single row (front width at one
+	 *  point of conflict). Each (row, file) queues independently. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
-	float FileSpacing = 120.f;
+	int32 FrontPerRow = 2;
+
+	/** Depth (Y) spacing between adjacent rows — large so the rows read as separate. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
+	float RowSpacing = 340.f;
+
+	/** Depth (Y) spacing between the abreast files inside one row. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
+	float AbreastSpacing = 110.f;
+
+	/** Visual scale of the furthest row (nearest row = 1.0); interpolated per row. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Layout")
+	float FarRowScale = 0.6f;
 
 	// ---- Unit class catalogues (data-driven) --------------------------------
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "EW|Units")
@@ -209,6 +226,11 @@ protected:
 	void AutoSpawn(EEWTeam InTeam);
 	float GetBaseX(EEWTeam InTeam) const { return InTeam == EEWTeam::Cyborg ? PlayerBaseX : EnemyBaseX; }
 
+	/** Mirror every level-placed building across X=0 so the cyborg base lands at +X
+	 *  (screen-left) to match the mirrored spawn layout and the HUD. Runs once at
+	 *  BeginPlay; the background sits at centre so it is unaffected. */
+	void MirrorLevelLayout();
+
 	/** Populate the unit catalogs from the generated sprite roster (20 cyborg + 20
 	 *  insect classes, each with a distinct genome archetype) unless a designer has
 	 *  already supplied a rich catalog via Blueprint. */
@@ -237,9 +259,13 @@ protected:
 	int32 CyborgLaneCursor = 0;
 	int32 InsectLaneCursor = 0;
 
-	/** Assign a depth file + compute the spawn Y for a fresh unit of InTeam. Aerials
-	 *  always take the centre file. Returns the world Y; writes the file into OutLane. */
+	/** Assign a depth file (flat index over CombatRows x FrontPerRow) + compute the
+	 *  spawn Y for a fresh unit of InTeam. Aerials take the centre row. Returns the
+	 *  world Y; writes the flat file index into OutLane. */
 	float AssignFormationY(EEWTeam InTeam, EEWRole InRole, int32& OutLane);
+
+	/** Perspective scale for a flat file index: nearest row = 1.0, furthest = FarRowScale. */
+	float RowScaleForLane(int32 Lane) const;
 
 	/** Damage every enemy unit (of EnemyTeam) within Radius of CenterX. Returns count hit. */
 	int32 DamageEnemiesInRange(EEWTeam EnemyTeam, float CenterX, float Radius, float Damage);

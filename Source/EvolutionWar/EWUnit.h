@@ -48,6 +48,11 @@ public:
 	int32 GetDepthLane() const { return DepthLane; }
 	void SetDepthLane(int32 In) { DepthLane = In; }
 
+	/** Perspective shrink for this unit's combat row (1.0 = nearest row). Set by the
+	 *  GameMode at spawn so further-back rows render smaller. */
+	float GetRowScale() const { return RowScale; }
+	void SetRowScale(float In) { RowScale = FMath::Clamp(In, 0.2f, 1.f); }
+
 	UFUNCTION(BlueprintPure, Category = "EW|Unit")
 	float GetHealthFraction() const { return Genome.MaxHealth > 0.f ? Health / Genome.MaxHealth : 0.f; }
 
@@ -119,6 +124,8 @@ protected:
 
 	/** Parallel formation file (set by the GameMode at spawn). */
 	int32 DepthLane = 0;
+	/** Perspective scale for this unit's row (1.0 = nearest); further rows shrink. */
+	float RowScale = 1.f;
 	/** Extra Z the aerial units float at above their ground rest height. */
 	float AerialAltitude = 0.f;
 	/** Countdown between support heal pulses. */

@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "EWParticleBurst.generated.h"
 
+class UStaticMesh;
 class UStaticMeshComponent;
 class UMaterialInterface;
 class UMaterialInstanceDynamic;
@@ -33,6 +34,10 @@ protected:
 
 	TArray<FVector> Velocities;
 	TArray<float> Spins;
+
+	/** Camera-facing quad mesh for each spark; resolved in the constructor. */
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMesh> PlaneMesh;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UMaterialInterface> GlowMaterial;

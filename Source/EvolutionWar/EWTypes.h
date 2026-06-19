@@ -50,6 +50,22 @@ enum class EEWRole : uint8
 	Tank	UMETA(DisplayName = "Tank")
 };
 
+/**
+ * Variant rarity tier. Replaces per-unit hue scrambling: instead of recoloring a
+ * unit's sprite, its strength is read off as a faint colored outline glow so the
+ * artwork stays true and rarity is legible at a glance.
+ */
+UENUM(BlueprintType)
+enum class EEWRarity : uint8
+{
+	Common		UMETA(DisplayName = "Common"),
+	Uncommon	UMETA(DisplayName = "Uncommon"),
+	Rare		UMETA(DisplayName = "Rare"),
+	Epic		UMETA(DisplayName = "Epic"),
+	Legendary	UMETA(DisplayName = "Legendary"),
+	Mythic		UMETA(DisplayName = "Mythic")
+};
+
 /** True for roles that fight in the air (spawn at altitude, special targeting). */
 FORCEINLINE bool IsAerialRole(EEWRole R) { return R == EEWRole::Aerial; }
 
@@ -130,15 +146,57 @@ struct FUnitGenome
 		G.Armor          = Vary(Armor + 1.f, 1.f, 100000.f) - 1.f;
 		G.Scale          = Vary(Scale, 0.6f, 2.2f);
 
-		// Mutate tint slightly so chaotic generations look visibly varied.
-		G.Tint = FLinearColor(
-			FMath::Clamp(Tint.R + Rng.FRandRange(-Amount, Amount), 0.2f, 1.5f),
-			FMath::Clamp(Tint.G + Rng.FRandRange(-Amount, Amount), 0.2f, 1.5f),
-			FMath::Clamp(Tint.B + Rng.FRandRange(-Amount, Amount), 0.2f, 1.5f),
-			1.f);
+		// Tint is deliberately left untouched: a variant's strength now reads as a
+		// rarity outline (see EEWRarity), not a scrambled hue, so the sprite keeps
+		// its authored team colour and only the power changes between generations.
 		return G;
 	}
 };
+
+/** Map a genome's raw Power() onto a rarity tier. Stronger variants read rarer, so
+ *  a beefy mutation visibly earns a brighter outline. Thresholds span the roster's
+ *  natural ~140-600 power range with headroom for mutation swings. */
+FORCEINLINE EEWRarity RarityFromPower(float P)
+{
+	if (P >= 480.f) { return EEWRarity::Mythic; }
+	if (P >= 390.f) { return EEWRarity::Legendary; }
+	if (P >= 310.f) { return EEWRarity::Epic; }
+	if (P >= 240.f) { return EEWRarity::Rare; }
+	if (P >= 175.f) { return EEWRarity::Uncommon; }
+	return EEWRarity::Common;
+}
+
+FORCEINLINE EEWRarity RarityFromGenome(const FUnitGenome& G) { return RarityFromPower(G.Power()); }
+
+/** Faint outline colour per rarity tier (classic loot palette). */
+FORCEINLINE FLinearColor RarityColor(EEWRarity R)
+{
+	switch (R)
+	{
+	case EEWRarity::Uncommon:  return FLinearColor(0.30f, 1.00f, 0.38f, 1.f); // green
+	case EEWRarity::Rare:      return FLinearColor(0.28f, 0.58f, 1.00f, 1.f); // blue
+	case EEWRarity::Epic:      return FLinearColor(0.72f, 0.36f, 1.00f, 1.f); // purple
+	case EEWRarity::Legendary: return FLinearColor(1.00f, 0.70f, 0.16f, 1.f); // gold
+	case EEWRarity::Mythic:    return FLinearColor(1.00f, 0.26f, 0.42f, 1.f); // red/pink
+	case EEWRarity::Common:
+	default:                   return FLinearColor(0.62f, 0.66f, 0.72f, 1.f); // faint grey
+	}
+}
+
+/** Outline glow strength per rarity: barely-there for common, brightest for mythic. */
+FORCEINLINE float RarityHaloOpacity(EEWRarity R)
+{
+	switch (R)
+	{
+	case EEWRarity::Uncommon:  return 0.34f;
+	case EEWRarity::Rare:      return 0.42f;
+	case EEWRarity::Epic:      return 0.50f;
+	case EEWRarity::Legendary: return 0.58f;
+	case EEWRarity::Mythic:    return 0.66f;
+	case EEWRarity::Common:
+	default:                   return 0.16f;
+	}
+}
 
 /** Design-time definition of a unit class: which sprite + base genome to spawn. */
 USTRUCT(BlueprintType)

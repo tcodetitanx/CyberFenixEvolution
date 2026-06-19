@@ -7,6 +7,11 @@
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
+#include "Engine/Texture2D.h"
+#include "GameFramework/PlayerController.h"
+
+// Class index of the unit currently being placed (-1 = none); defined in EWCameraPawn.cpp.
+extern int32 GGhostClass;
 
 namespace
 {
@@ -144,9 +149,9 @@ void AEWHUD::DrawHelpOverlay(float VW, float VH)
 	Y += 26.f;
 	struct FRow { const TCHAR* Key; const TCHAR* Desc; };
 	static const FRow Rows[] = {
-		{ TEXT("A / D  or  Arrows  or  screen edge"), TEXT("Pan the camera across the arena") },
+		{ TEXT("Arrow Keys  or  screen edge"),        TEXT("Pan the camera; mouse to any edge to pan/raise") },
 		{ TEXT("Mouse Wheel  or  + / -"),             TEXT("Zoom in / out") },
-		{ TEXT("Up / Down"),                          TEXT("Raise / lower the view") },
+		{ TEXT("Up / Down  or  top/bottom edge"),     TEXT("Raise / lower the view") },
 		{ TEXT("F"),                                  TEXT("Toggle auto-follow the battle front") },
 		{ TEXT("1 - 5,  then Left-Click a lane"),     TEXT("Deploy the selected unit class (costs Biomass)") },
 		{ TEXT("Q / W / E / R,  then Left-Click"),    TEXT("Fire Cannon / Bomb / Laser / Shield orbital") },
@@ -183,9 +188,12 @@ void AEWHUD::DrawMinimap(AEWGameMode* GM, float VW, float VH)
 	DrawCorners(MX, MY, MW, MH, FLinearColor(Cyan.R, Cyan.G, Cyan.B, 0.5f), 8.f);
 	DrawTextShadowed(TEXT("TACTICAL MAP"), Dim, MX + 6.f, MY - 14.f, GEngine ? GEngine->GetSmallFont() : nullptr);
 
+	// PlayerBaseX (cyborg) is at +X / screen-left, EnemyBaseX at -X, so this span is
+	// signed (negative). Keep the sign so ToMapX maps cyborg base -> left edge.
 	const float MinX = GM->PlayerBaseX;
 	const float MaxX = GM->EnemyBaseX;
-	const float Span = FMath::Max(1.f, MaxX - MinX);
+	const float Delta = MaxX - MinX;
+	const float Span = (FMath::Abs(Delta) < 1.f) ? 1.f : Delta;
 	const float AirY = MY + 8.f;     // upper sub-row centre
 	const float GndY = MY + 30.f;    // lower sub-row centre
 
@@ -257,7 +265,7 @@ void AEWHUD::DrawHUD()
 			if (!U || !U->IsAlive()) { continue; }
 			const float Frac = U->GetHealthFraction();
 			if (Frac >= 0.999f) { continue; } // hide full-health bars to reduce clutter
-			const float TopZ = U->GetActorLocation().Z + U->GetSpriteWorldHeight() * U->GetGenome().Scale * 0.5f + 30.f;
+			const float TopZ = U->GetActorLocation().Z + U->GetSpriteWorldHeight() * U->GetGenome().Scale * U->GetRowScale() * 0.5f + 30.f;
 			const FVector Top(U->GetActorLocation().X, U->GetActorLocation().Y, TopZ);
 			const FVector S = Project(Top);
 			if (S.Z <= 0.f || S.X < -50.f || S.X > VW + 50.f || S.Y < -50.f || S.Y > VH + 50.f) { continue; }
@@ -439,6 +447,26 @@ void AEWHUD::DrawHUD()
 		if (bHelp)
 		{
 			DrawHelpOverlay(VW, VH);
+		}
+	}
+
+
+	// ---- Ghost placement preview --------------------------------------------
+	// While the player holds the mouse to place a unit, show a translucent sprite of
+	// that class at the cursor. The real unit drops where they release.
+	if (GGhostClass >= 0 && GM->CyborgClasses.IsValidIndex(GGhostClass))
+	{
+		if (UTexture2D* GhostTex = GM->CyborgClasses[GGhostClass].Sprite)
+		{
+			float MX = 0.f, MY = 0.f;
+			if (APlayerController* PC = GetOwningPlayerController())
+			{
+				PC->GetMousePosition(MX, MY);
+			}
+			const float GW = 120.f, GH = 150.f;
+			DrawTexture(GhostTex, MX - GW * 0.5f, MY - GH, GW, GH, 0.f, 0.f, 1.f, 1.f,
+				FLinearColor(0.55f, 0.9f, 1.0f, 0.45f));
+			DrawTextShadowed(TEXT("release to place"), Cyan, MX - 44.f, MY + 6.f, Small);
 		}
 	}
 

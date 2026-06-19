@@ -21,7 +21,7 @@ AEWProjectile::AEWProjectile()
 	Trail->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Trail->SetCastShadow(false);
 	Trail->SetRelativeRotation(FRotator(0.f, 0.f, 90.f));
-	// Streak trailing behind the head along the lane (cyborgs fire toward +X).
+	// Streak trailing behind the head along the lane.
 	Trail->SetRelativeLocation(FVector(-70.f, 0.f, 0.f));
 	Trail->SetRelativeScale3D(FVector(1.4f, 0.14f, 1.f));
 

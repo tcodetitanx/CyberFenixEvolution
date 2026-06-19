@@ -1,8 +1,13 @@
 # ---- Secrets (NEVER commit) ----
 Content/keys/
+keys/
 *.key
 *api key*.txt
 githubkey.txt
+github.txt
+
+# ---- Local logs ----
+*.log
 
 # ---- Unreal Engine build artifacts ----
 Binaries/

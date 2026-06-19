@@ -14,6 +14,7 @@ AEWBuilding::AEWBuilding()
 	SetRootComponent(SpriteMesh);
 	SpriteMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SpriteMesh->SetCastShadow(false);
+	// Stand the plane up facing the camera (-Y side).
 	SpriteMesh->SetRelativeRotation(FRotator(0.f, 0.f, 90.f));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneFinder(TEXT("/Engine/BasicShapes/Plane.Plane"));
@@ -52,7 +53,13 @@ void AEWBuilding::ApplyVisuals()
 	}
 
 	const float Desired = FMath::Max(50.f, SpriteWorldHeight);
-	SpriteMesh->SetRelativeScale3D(FVector(Desired / 100.f));
+	// Negative X mirrors the billboard horizontally to match the mirrored world.
+	const float SF = Desired / 100.f;
+	SpriteMesh->SetRelativeScale3D(FVector(-SF, SF, SF));
+	// The base actors are placed in the level, and a placed transform's rotation
+	// overrides the constructor's. Force the sprite upright + facing the camera here
+	// so a base can never end up edge-on (parallel to the camera's line of sight).
+	SetActorRotation(FRotator(0.f, 0.f, 90.f));
 	// SpriteMesh is the root component, so moving it moves the actor. Lift the
 	// sprite so its base rests on the ground WITHOUT discarding the placed X/Y.
 	const FVector Loc = GetActorLocation();

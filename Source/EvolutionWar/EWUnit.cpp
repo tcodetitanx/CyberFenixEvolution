@@ -5,9 +5,29 @@
 #include "EWParticleBurst.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/Texture2D.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
+
+namespace
+{
+	/** Horizontal billboard mirror for a unit sprite. Everything is flipped (-1) so
+	 *  the directional artwork faces the enemy after the world's X mirror, except art
+	 *  whose source already faces that way (the Artillery), which stays +1. */
+	float SpriteFaceSign(const UTexture2D* Tex)
+	{
+		return (Tex && Tex->GetName().Contains(TEXT("artillery"))) ? 1.f : -1.f;
+	}
+
+	/** Base sprite tint per team. Allies are untinted (raw artwork); insects keep
+	 *  their dialed-in cool multiply. */
+	FLinearColor TeamSpriteTint(EEWTeam Team)
+	{
+		if (Team == EEWTeam::Cyborg) { return FLinearColor::White; }
+		return FLinearColor(0.5f, 0.75f, 1.5f, 1.f);
+	}
+}
 
 AEWUnit::AEWUnit()
 {
@@ -17,7 +37,7 @@ AEWUnit::AEWUnit()
 	SetRootComponent(SpriteMesh);
 	SpriteMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SpriteMesh->SetCastShadow(false);
-	// Stand the flat plane up in the X-Z lane plane, facing the camera (-Y).
+	// Stand the flat plane up in the X-Z lane plane, facing the camera (-Y side).
 	SpriteMesh->SetRelativeRotation(FRotator(0.f, 0.f, 90.f));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneFinder(TEXT("/Engine/BasicShapes/Plane.Plane"));
@@ -77,13 +97,14 @@ void AEWUnit::ApplyVisuals()
 		{
 			SpriteMID->SetTextureParameterValue(TEXT("BaseTex"), SpriteTexture);
 		}
-		SpriteMID->SetVectorParameterValue(TEXT("Tint"), Genome.Tint);
+		SpriteMID->SetVectorParameterValue(TEXT("Tint"), TeamSpriteTint(Team));
 	}
 
-	const float Desired = FMath::Max(20.f, SpriteWorldHeight * Genome.Scale);
+	const float FaceSign = SpriteFaceSign(SpriteTexture);
+	const float Desired = FMath::Max(20.f, SpriteWorldHeight * Genome.Scale * RowScale);
 	const float ScaleFactor = Desired / 100.f; // engine plane is 100uu wide.
 	BaseScaleFactor = ScaleFactor;
-	SpriteMesh->SetRelativeScale3D(FVector(ScaleFactor));
+	SpriteMesh->SetRelativeScale3D(FVector(FaceSign * ScaleFactor, ScaleFactor, ScaleFactor));
 	// SpriteMesh is the root component, so moving it moves the actor. Lift the
 	// sprite so its base rests on the ground WITHOUT discarding the spawn X/Y.
 	// Cache this rest height; the bob/jump/death animations ride on top of it.
@@ -141,6 +162,16 @@ void AEWUnit::Tick(float DeltaSeconds)
 		CurrentTarget = GM->FindNearestEnemy(Team, GetActorLocation(), Genome.AggroRange, bCanHitAir);
 	}
 
+	// Flyers ignore the ground war: they fly over ground units and dive straight for
+	// the enemy base (still dogfighting an enemy flyer if one is the nearest threat).
+	if (IsAerial() && CurrentTarget)
+	{
+		if (const AEWUnit* TU = Cast<AEWUnit>(CurrentTarget))
+		{
+			if (!TU->IsAerial()) { CurrentTarget = nullptr; }
+		}
+	}
+
 	// Fall back to marching at the enemy base.
 	AActor* Goal = CurrentTarget;
 	if (!Goal)
@@ -180,7 +211,7 @@ void AEWUnit::Tick(float DeltaSeconds)
 		// ranged simply stop at their (long) range, naturally sitting behind melee.
 		if (RoleQueues(MyRole))
 		{
-			const float BodySpacing = FMath::Max(180.f, SpriteWorldHeight * Genome.Scale * 0.55f);
+			const float BodySpacing = FMath::Max(150.f, SpriteWorldHeight * Genome.Scale * RowScale * 0.55f);
 			float FriendX = 0.f;
 			if (GM->NearestFriendlyAheadX(Team, Loc.X, Dir, this, Genome.AggroRange, FriendX))
 			{
@@ -210,8 +241,10 @@ void AEWUnit::UpdateVisualAnim(float DeltaSeconds, bool bMoving)
 		return;
 	}
 
-	const float DirSign = (Team == EEWTeam::Cyborg) ? 1.f : -1.f;
-	const float Desired = FMath::Max(20.f, SpriteWorldHeight * Genome.Scale);
+	// Cyborgs now advance in -X (enemy on the right of the world / screen), so the
+	// lean cue points -X for them and +X for insects.
+	const float DirSign = (Team == EEWTeam::Cyborg) ? -1.f : 1.f;
+	const float Desired = FMath::Max(20.f, SpriteWorldHeight * Genome.Scale * RowScale);
 
 	if (AttackAnimTime > 0.f) { AttackAnimTime = FMath::Max(0.f, AttackAnimTime - DeltaSeconds); }
 	if (HitShakeTime > 0.f)   { HitShakeTime   = FMath::Max(0.f, HitShakeTime - DeltaSeconds); }
@@ -265,18 +298,19 @@ void AEWUnit::UpdateVisualAnim(float DeltaSeconds, bool bMoving)
 	}
 
 	SpriteMesh->SetRelativeRotation(FRotator(PitchOff, 0.f, 90.f + RollOff));
-	SpriteMesh->SetRelativeScale3D(FVector(BaseScaleFactor * ScaleMul));
+	const float SX = BaseScaleFactor * ScaleMul;
+	SpriteMesh->SetRelativeScale3D(FVector(SpriteFaceSign(SpriteTexture) * SX, SX, SX)); // keep the horizontal mirror
 
 	const FVector L = GetActorLocation();
 	SetActorLocation(FVector(L.X, L.Y, BaseActorZ + ZOff));
 
 	if (SpriteMID && Bright > 0.f)
 	{
-		SpriteMID->SetVectorParameterValue(TEXT("Tint"), Genome.Tint + FLinearColor(Bright, Bright, Bright, 0.f));
+		SpriteMID->SetVectorParameterValue(TEXT("Tint"), TeamSpriteTint(Team) + FLinearColor(Bright, Bright, Bright, 0.f));
 	}
 	else if (SpriteMID)
 	{
-		SpriteMID->SetVectorParameterValue(TEXT("Tint"), Genome.Tint);
+		SpriteMID->SetVectorParameterValue(TEXT("Tint"), TeamSpriteTint(Team));
 	}
 }
 
@@ -287,12 +321,13 @@ void AEWUnit::UpdateDeathAnim(float DeltaSeconds)
 
 	if (SpriteMesh)
 	{
-		const float DirSign = (Team == EEWTeam::Cyborg) ? 1.f : -1.f;
+		const float DirSign = (Team == EEWTeam::Cyborg) ? -1.f : 1.f;
 		// Topple from standing (roll 90) flat to the ground, leaning along the lane.
 		const float Roll = FMath::Lerp(90.f, 0.f, FMath::Sin(T * (PI * 0.5f)));
 		const float Pitch = DirSign * T * 20.f;
 		SpriteMesh->SetRelativeRotation(FRotator(Pitch, 0.f, Roll));
-		SpriteMesh->SetRelativeScale3D(FVector(BaseScaleFactor * FMath::Lerp(1.f, 0.15f, T)));
+		const float DS = BaseScaleFactor * FMath::Lerp(1.f, 0.15f, T);
+		SpriteMesh->SetRelativeScale3D(FVector(SpriteFaceSign(SpriteTexture) * DS, DS, DS)); // keep the horizontal mirror
 	}
 
 	const FVector L = GetActorLocation();
@@ -300,7 +335,7 @@ void AEWUnit::UpdateDeathAnim(float DeltaSeconds)
 
 	if (SpriteMID)
 	{
-		SpriteMID->SetVectorParameterValue(TEXT("Tint"), Genome.Tint * FMath::Lerp(1.f, 0.15f, T));
+		SpriteMID->SetVectorParameterValue(TEXT("Tint"), TeamSpriteTint(Team) * FMath::Lerp(1.f, 0.15f, T));
 	}
 
 	if (T >= 1.f)
